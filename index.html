@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>KORA · AI Translation System</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#07080A;--pt:#CFE3F2;--pt-d:rgba(207,227,242,.14)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--pt);font-family:'Inter',system-ui,sans-serif;min-height:100%}
+body{overflow-x:hidden}
+.grid-bg{position:fixed;inset:0;z-index:0;pointer-events:none;
+ background-image:linear-gradient(rgba(207,227,242,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(207,227,242,.045) 1px,transparent 1px);
+ background-size:48px 48px;-webkit-mask-image:radial-gradient(ellipse at 50% 40%,#000 25%,transparent 75%);mask-image:radial-gradient(ellipse at 50% 40%,#000 25%,transparent 75%);
+ animation:drift 40s linear infinite}
+@keyframes drift{to{background-position:48px 48px}}
+.glow{position:fixed;z-index:0;pointer-events:none;width:60vmax;height:60vmax;left:50%;top:-30vmax;transform:translateX(-50%);
+ background:radial-gradient(circle,rgba(207,227,242,.09),transparent 60%);animation:glowb 9s ease-in-out infinite}
+@keyframes glowb{50%{opacity:.5;transform:translateX(-50%) scale(1.08)}}
+.hc{position:fixed;width:34px;height:34px;z-index:50;pointer-events:none;border:1px solid rgba(207,227,242,.55);opacity:0;animation:fadeIn 1.4s 1.2s forwards}
+.hc.tl{top:14px;left:14px;border-right:0;border-bottom:0}.hc.tr{top:14px;right:14px;border-left:0;border-bottom:0}
+.hc.bl{bottom:14px;left:14px;border-right:0;border-top:0}.hc.br{bottom:14px;right:14px;border-left:0;border-top:0}
+@keyframes fadeIn{to{opacity:1}}
+#hdr{position:fixed;top:0;left:0;right:0;height:100dvh;z-index:40;display:flex;flex-direction:column;align-items:center;justify-content:center;
+ transition:height 1.3s cubic-bezier(.77,0,.18,1),background .8s,border-color .8s;border-bottom:1px solid transparent}
+#hdr.done{height:76px;background:rgba(7,8,10,.72);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-bottom-color:var(--pt-d)}
+#logo{font-family:'Space Grotesk',sans-serif;font-weight:300;font-size:clamp(3.4rem,15vw,9rem);letter-spacing:.55em;padding-left:.55em;line-height:1;
+ transition:font-size 1.3s cubic-bezier(.77,0,.18,1),letter-spacing 1.3s cubic-bezier(.77,0,.18,1);
+ background:linear-gradient(100deg,#8fa5b5 10%,#fff 45%,#CFE3F2 55%,#8fa5b5 90%);background-size:220% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:blurIn 2.2s cubic-bezier(.2,.7,.2,1) both,shine 7s 2s linear infinite}
+#hdr.done #logo{font-size:1.6rem;letter-spacing:.5em;padding-left:.5em}
+@keyframes blurIn{from{opacity:0;filter:blur(26px);transform:scale(1.08)}to{opacity:1;filter:blur(0);transform:scale(1)}}
+@keyframes shine{to{background-position:-220% 0}}
+#status{display:flex;align-items:center;gap:12px;margin-top:2.2rem;font-family:'Space Grotesk';font-size:.7rem;letter-spacing:.42em;opacity:0;animation:fadeIn 1.2s 1.6s forwards;
+ transition:margin .8s,max-height .8s,opacity .8s;max-height:40px;overflow:hidden}
+#hdr.done #status{opacity:0!important;max-height:0;margin:0;animation:none}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--pt);box-shadow:0 0 0 0 rgba(207,227,242,.6);animation:pulse 2.2s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(207,227,242,.55)}70%{box-shadow:0 0 0 12px rgba(207,227,242,0)}100%{box-shadow:0 0 0 0 rgba(207,227,242,0)}}
+#app{position:relative;z-index:10;max-width:1180px;margin:0 auto;padding:108px 22px 40px;opacity:0;transform:translateY(24px);transition:opacity 1.1s .5s,transform 1.1s .5s}
+#app.show{opacity:1;transform:none}
+.bar{display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:center;margin-bottom:22px}
+.sel{position:relative}
+.sel select{width:100%;appearance:none;-webkit-appearance:none;background:rgba(255,255,255,.025);border:1px solid var(--pt-d);color:var(--pt);
+ font-family:'Space Grotesk';letter-spacing:.14em;font-size:.78rem;text-transform:uppercase;padding:15px 40px 15px 18px;border-radius:14px;outline:0;cursor:pointer;transition:.4s}
+.sel select:hover,.sel select:focus{border-color:rgba(207,227,242,.5);background:rgba(207,227,242,.05);box-shadow:0 0 28px rgba(207,227,242,.08)}
+.sel select option{background:#0d0f13;color:#CFE3F2}
+.sel:after{content:"";position:absolute;right:18px;top:50%;width:7px;height:7px;border-right:1px solid var(--pt);border-bottom:1px solid var(--pt);transform:translateY(-70%) rotate(45deg);pointer-events:none}
+#swap{width:52px;height:52px;border-radius:50%;border:1px solid rgba(207,227,242,.3);background:rgba(207,227,242,.04);color:var(--pt);font-size:1.25rem;cursor:pointer;transition:.5s}
+#swap:hover{border-color:var(--pt);box-shadow:0 0 30px rgba(207,227,242,.25);background:rgba(207,227,242,.1)}
+#swap span{display:inline-block;transition:transform .8s cubic-bezier(.6,0,.2,1)}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+.panel{position:relative;border-radius:22px;padding:1px;overflow:hidden;background:linear-gradient(145deg,rgba(207,227,242,.22),rgba(207,227,242,.03) 40%,rgba(207,227,242,.14));animation:breathe 6s ease-in-out infinite}
+.panel.b{animation-delay:-3s;animation-duration:7.3s}
+@keyframes breathe{0%,100%{box-shadow:0 0 0 rgba(207,227,242,0);filter:brightness(.92)}50%{box-shadow:0 0 46px rgba(207,227,242,.12);filter:brightness(1.15)}}
+.panel:before,.btn:before{content:"";position:absolute;top:0;left:-60%;width:40%;height:100%;z-index:3;pointer-events:none;
+ background:linear-gradient(100deg,transparent,rgba(255,255,255,.1),transparent);transform:skewX(-20deg);transition:left 1s ease}
+.panel:hover:before,.btn:hover:before{left:130%}
+.inner{position:relative;background:linear-gradient(160deg,rgba(14,17,22,.88),rgba(8,10,13,.92));backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-radius:21px;height:100%;display:flex;flex-direction:column;min-height:300px}
+.lab{display:flex;justify-content:space-between;align-items:center;padding:16px 20px 0;font-family:'Space Grotesk';font-size:.64rem;letter-spacing:.35em;color:rgba(207,227,242,.55)}
+textarea,#out{flex:1;width:100%;min-height:200px;background:transparent;border:0;outline:0;resize:none;color:#EAF3FA;font-size:1.18rem;line-height:1.65;font-weight:300;padding:16px 20px;font-family:'Inter'}
+textarea::placeholder{color:rgba(207,227,242,.28)}
+#out{white-space:pre-wrap;overflow:auto;transition:opacity .35s,filter .35s,transform .35s}
+#out.swap{opacity:0;filter:blur(8px);transform:translateY(6px)}
+#out .ph{color:rgba(207,227,242,.28)}
+.tools{display:flex;gap:10px;align-items:center;padding:10px 16px 16px;flex-wrap:wrap}
+.ib{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--pt-d);background:rgba(207,227,242,.03);color:var(--pt);border-radius:11px;padding:9px 15px;font-family:'Space Grotesk';font-size:.7rem;letter-spacing:.2em;cursor:pointer;transition:.35s;text-transform:uppercase}
+.ib:hover{border-color:rgba(207,227,242,.55);background:rgba(207,227,242,.09);transform:translateY(-1px)}
+.ib[hidden]{display:none}
+#mic.rec{border-color:var(--pt);background:rgba(207,227,242,.14);box-shadow:0 0 0 0 rgba(207,227,242,.55);animation:micp 1.5s infinite}
+@keyframes micp{0%{box-shadow:0 0 0 0 rgba(207,227,242,.55)}70%{box-shadow:0 0 0 14px rgba(207,227,242,0)}100%{box-shadow:0 0 0 0 rgba(207,227,242,0)}}
+.btn{position:relative;overflow:hidden;display:inline-flex;align-items:center;gap:10px;border:1px solid rgba(207,227,242,.38);background:linear-gradient(180deg,rgba(207,227,242,.12),rgba(207,227,242,.03));color:#fff;border-radius:13px;padding:13px 26px;font-family:'Space Grotesk';font-size:.78rem;letter-spacing:.22em;text-transform:uppercase;cursor:pointer;transition:.45s}
+.btn:hover{border-color:var(--pt);box-shadow:0 0 34px rgba(207,227,242,.22);transform:translateY(-2px)}
+.btn:active{transform:scale(.97)}
+.btn.ok{border-color:#9fe0c4;color:#c9f5e1;box-shadow:0 0 30px rgba(159,224,196,.25)}
+.btn.speaking{box-shadow:0 0 36px rgba(207,227,242,.4);animation:pulseb 1.2s infinite}
+@keyframes pulseb{50%{background:rgba(207,227,242,.22)}}
+.spin{width:14px;height:14px;border:1px solid rgba(207,227,242,.25);border-top-color:var(--pt);border-radius:50%;opacity:0;transition:opacity .3s;animation:rot .9s linear infinite}
+.spin.on{opacity:1}@keyframes rot{to{transform:rotate(360deg)}}
+#hist{margin-top:34px}
+#hist h3{font-family:'Space Grotesk';font-weight:400;font-size:.64rem;letter-spacing:.38em;color:rgba(207,227,242,.5);margin:0 0 12px}
+.hi{display:block;width:100%;text-align:left;cursor:pointer;border:1px solid rgba(207,227,242,.1);background:rgba(207,227,242,.02);border-radius:13px;padding:11px 16px;margin-bottom:8px;color:var(--pt);transition:.4s;animation:rise .6s both}
+.hi:hover{border-color:rgba(207,227,242,.4);background:rgba(207,227,242,.06);transform:translateX(5px)}
+.hi small{display:block;font-family:'Space Grotesk';font-size:.6rem;letter-spacing:.25em;color:rgba(207,227,242,.45);margin-bottom:3px}
+.hi p{margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:.88rem;font-weight:300}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}}
+footer{margin-top:40px;text-align:center;font-family:'Space Grotesk';font-size:.58rem;letter-spacing:.35em;color:rgba(207,227,242,.3)}
+@media(max-width:820px){.cols{grid-template-columns:1fr}.bar{grid-template-columns:1fr 52px 1fr;gap:8px}.sel select{padding:14px 30px 14px 12px;font-size:.66rem;letter-spacing:.06em}
+ #app{padding:96px 16px 30px}#hdr.done #logo{font-size:1.25rem}.btn{padding:12px 18px;flex:1;justify-content:center}.hc{width:22px;height:22px}}
+@media(prefers-reduced-motion:reduce){*{animation-duration:.01s!important;transition-duration:.01s!important}}
+</style>
+</head>
+<body>
+<div class="grid-bg"></div><div class="glow"></div>
+<i class="hc tl"></i><i class="hc tr"></i><i class="hc bl"></i><i class="hc br"></i>
+
+<header id="hdr">
+  <div id="logo">KORA</div>
+  <div id="status"><span class="dot"></span>AI TRANSLATION SYSTEM</div>
+</header>
+
+<main id="app">
+  <div class="bar">
+    <div class="sel"><select id="src" aria-label="Ausgangssprache"></select></div>
+    <button id="swap" title="Sprachen tauschen" aria-label="Sprachen tauschen"><span>⇄</span></button>
+    <div class="sel"><select id="tgt" aria-label="Zielsprache"></select></div>
+  </div>
+
+  <div class="cols">
+    <section class="panel"><div class="inner">
+      <div class="lab"><span>EINGABE</span><span id="cnt">0</span></div>
+      <textarea id="inp" placeholder="Text eingeben, sprechen oder einfügen …" spellcheck="false" autofocus></textarea>
+      <div class="tools">
+        <button class="ib" id="clr" title="Löschen">× Löschen</button>
+        <button class="ib" id="pst" title="Einfügen">Einfügen</button>
+        <button class="ib" id="mic" title="Spracheingabe" aria-label="Spracheingabe" hidden>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>
+          <span id="micT">Sprechen</span>
+        </button>
+      </div>
+    </div></section>
+
+    <section class="panel b"><div class="inner">
+      <div class="lab"><span>ÜBERSETZUNG</span><span class="spin" id="spin"></span></div>
+      <div id="out"><span class="ph">Die Übersetzung erscheint hier in Echtzeit …</span></div>
+      <div class="tools">
+        <button class="btn" id="cpy"><span id="cpyT">Kopieren</span></button>
+        <button class="btn" id="spk"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H2v6h4l5 4V5z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/></svg><span>Vorlesen</span></button>
+      </div>
+    </div></section>
+  </div>
+
+  <div id="hist" hidden><h3>SCHNELL-VERLAUF</h3><div id="hl"></div></div>
+  <footer>KORA · NATÜRLICH · PRÄZISE · DIREKT VERSTÄNDLICH</footer>
+</main>
+
+<script>
+const L=[["de","Deutsch"],["en","Englisch"],["tr","Türkisch"],["ar","Arabisch"],["fr","Französisch"],["es","Spanisch"],["it","Italienisch"],["pt","Portugiesisch"],["ru","Russisch"],["uk","Ukrainisch"],["pl","Polnisch"],["nl","Niederländisch"],["ro","Rumänisch"],["bg","Bulgarisch"],["el","Griechisch"],["sr","Serbisch"],["hr","Kroatisch"],["bs","Bosnisch"],["sq","Albanisch"],["cs","Tschechisch"],["sk","Slowakisch"],["hu","Ungarisch"],["sv","Schwedisch"],["da","Dänisch"],["no","Norwegisch"],["fi","Finnisch"],["he","Hebräisch"],["fa","Persisch"],["ku","Kurdisch"],["hi","Hindi"],["ur","Urdu"],["bn","Bengalisch"],["zh-CN","Chinesisch"],["ja","Japanisch"],["ko","Koreanisch"],["th","Thai"],["vi","Vietnamesisch"],["id","Indonesisch"],["ms","Malaiisch"],["sw","Suaheli"],["af","Afrikaans"],["lt","Litauisch"],["lv","Lettisch"],["et","Estnisch"],["is","Isländisch"],["ka","Georgisch"],["hy","Armenisch"],["az","Aserbaidschanisch"],["kk","Kasachisch"],["la","Latein"]];
+const $=id=>document.getElementById(id);
+const src=$('src'),tgt=$('tgt'),inp=$('inp'),out=$('out'),spin=$('spin');
+src.innerHTML='<option value="auto">Automatisch erkennen</option>'+L.map(l=>`<option value="${l[0]}">${l[1]}</option>`).join('');
+tgt.innerHTML=L.map(l=>`<option value="${l[0]}">${l[1]}</option>`).join('');
+src.value='auto';tgt.value='en';
+let result='',tok=0,timer,histTimer,rot=0;
+
+setTimeout(()=>{$('hdr').classList.add('done');$('app').classList.add('show')},3300);
+
+/* ---------- Übersetzungs-Kaskade: Google GTX -> MyMemory ---------- */
+function chunks(t,max){const parts=t.match(/[^.!?\n]+[.!?]*\s*|\n/g)||[t],res=[];let c='';
+ for(const p of parts){if((c+p).length>max&&c){res.push(c);c=''}
+  if(p.length>max){for(let i=0;i<p.length;i+=max)res.push(p.slice(i,i+max))}else c+=p}
+ if(c)res.push(c);return res}
+const timeout=(ms)=>{const c=new AbortController();setTimeout(()=>c.abort(),ms);return c.signal};
+
+async function gtx(q,s,t){
+ if(!q.trim())return q;
+ const u=`https://translate.googleapis.com/translate_a/single?client=gtx&sl=${s}&tl=${t}&dt=t&q=${encodeURIComponent(q)}`;
+ const r=await fetch(u,{signal:timeout(8000)});
+ if(!r.ok)throw new Error('gtx '+r.status);
+ const d=await r.json();
+ if(!Array.isArray(d)||!Array.isArray(d[0]))throw new Error('gtx format');
+ return d[0].map(x=>x&&x[0]||'').join('')}
+
+async function mymemory(q,s,t){
+ if(!q.trim())return q;
+ const u=`https://api.mymemory.translated.net/get?q=${encodeURIComponent(q)}&langpair=${s==='auto'?'Autodetect':s}|${t}&de=kora-app@example.com`;
+ const r=await fetch(u,{signal:timeout(10000)});
+ const d=await r.json();
+ const x=d&&d.responseData&&d.responseData.translatedText;
+ if(!x||d.responseStatus!=200)throw new Error('mm '+(d&&d.responseDetails||''));
+ const ta=document.createElement('textarea');ta.innerHTML=x;return ta.value}
+
+async function engine(text,s,t){
+ try{return (await Promise.all(chunks(text,1500).map(c=>gtx(c,s,t)))).join('')}
+ catch(e){return (await Promise.all(chunks(text,450).map(c=>mymemory(c,s,t)))).join('')}}
+
+async function translate(){
+ const text=inp.value.trim(),my=++tok;
+ if(!text){result='';out.innerHTML='<span class="ph">Die Übersetzung erscheint hier in Echtzeit …</span>';spin.classList.remove('on');return}
+ spin.classList.add('on');
+ try{const s=src.value,t=tgt.value;
+  const r=(s===t)?text:await engine(text,s,t);
+  if(my!==tok)return;
+  result=r;out.textContent=r;spin.classList.remove('on');
+  clearTimeout(histTimer);histTimer=setTimeout(()=>saveHist(text,r),1800);
+ }catch(e){if(my!==tok)return;spin.classList.remove('on');
+  out.innerHTML='<span class="ph">Verbindung momentan nicht möglich – bitte gleich erneut versuchen.</span>';result=''}}
+const deb=()=>{clearTimeout(timer);$('cnt').textContent=inp.value.length;timer=setTimeout(translate,450)};
+inp.addEventListener('input',deb);
+
+[src,tgt].forEach(s=>s.addEventListener('change',()=>{out.classList.add('swap');setTimeout(()=>out.classList.remove('swap'),350);translate()}));
+$('swap').onclick=()=>{
+ stopMic();
+ rot+=180;$('swap').firstElementChild.style.transform=`rotate(${rot}deg)`;
+ let s=src.value,t=tgt.value;
+ if(s==='auto'){s=t;t=(t==='en'?'de':'en')}else{[s,t]=[t,s]}
+ const old=result;src.value=s;tgt.value=t;
+ if(old){inp.value=old;$('cnt').textContent=old.length}
+ out.classList.add('swap');setTimeout(()=>out.classList.remove('swap'),350);translate()};
+
+$('clr').onclick=()=>{stopMic();inp.value='';$('cnt').textContent=0;translate();inp.focus()};
+$('pst').onclick=async()=>{try{inp.value=await navigator.clipboard.readText();$('cnt').textContent=inp.value.length;translate()}catch(e){inp.focus()}};
+
+/* ---------- Mikrofon-Spracheingabe ---------- */
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+let rec=null,recOn=false,baseTxt='';
+function stopMic(){if(rec&&recOn){try{rec.stop()}catch(e){}}}
+function micUI(on){recOn=on;$('mic').classList.toggle('rec',on);$('micT').textContent=on?'Hört zu …':'Sprechen'}
+if(SR){
+ $('mic').hidden=false;
+ $('mic').onclick=()=>{
+  if(recOn){stopMic();return}
+  rec=new SR();
+  rec.lang=src.value==='auto'?(navigator.language||'de-DE'):src.value;
+  rec.continuous=true;rec.interimResults=true;
+  baseTxt=inp.value&&!/\s$/.test(inp.value)?inp.value+' ':inp.value;
+  rec.onstart=()=>micUI(true);
+  rec.onresult=e=>{let t='';for(let i=0;i<e.results.length;i++)t+=e.results[i][0].transcript;
+   inp.value=baseTxt+t;deb()};
+  rec.onerror=()=>micUI(false);
+  rec.onend=()=>{micUI(false);clearTimeout(timer);translate()};
+  try{rec.start()}catch(e){micUI(false)}}}
+
+/* ---------- Kopieren / Vorlesen ---------- */
+$('cpy').onclick=async()=>{if(!result)return;
+ try{await navigator.clipboard.writeText(result)}catch(e){const r=document.createRange();r.selectNodeContents(out);const s=getSelection();s.removeAllRanges();s.addRange(r);document.execCommand('copy');s.removeAllRanges()}
+ const b=$('cpy');b.classList.add('ok');$('cpyT').textContent='Kopiert!';
+ setTimeout(()=>{b.classList.remove('ok');$('cpyT').textContent='Kopieren'},1600)};
+$('spk').onclick=()=>{if(!result||!('speechSynthesis' in window))return;
+ const sy=speechSynthesis,b=$('spk');
+ if(sy.speaking){sy.cancel();b.classList.remove('speaking');return}
+ const u=new SpeechSynthesisUtterance(result);u.lang=tgt.value;u.rate=.95;
+ u.onend=u.onerror=()=>b.classList.remove('speaking');
+ b.classList.add('speaking');sy.speak(u)};
+
+/* ---------- Verlauf (letzte 3, lokal) ---------- */
+const KEY='kora_hist';
+const getH=()=>{try{return JSON.parse(localStorage.getItem(KEY))||[]}catch(e){return[]}};
+function saveHist(a,b){if(a.length<2||!b)return;
+ let h=getH().filter(x=>x.a!==a);h.unshift({a,b,s:src.value,t:tgt.value});h=h.slice(0,3);
+ try{localStorage.setItem(KEY,JSON.stringify(h))}catch(e){}renderH()}
+function renderH(){const h=getH(),box=$('hl');$('hist').hidden=!h.length;box.innerHTML='';
+ h.forEach((x,i)=>{const e=document.createElement('button');e.className='hi';e.style.animationDelay=i*.08+'s';
+  const sm=document.createElement('small'),p1=document.createElement('p'),p2=document.createElement('p');
+  const nm=c=>c==='auto'?'Auto':(L.find(l=>l[0]===c)||[0,c])[1];
+  sm.textContent=(nm(x.s)+' → '+nm(x.t)).toUpperCase();p1.textContent=x.a;p2.textContent=x.b;p2.style.opacity='.6';
+  e.append(sm,p1,p2);
+  e.onclick=()=>{src.value=x.s;tgt.value=x.t;inp.value=x.a;result=x.b;out.textContent=x.b;$('cnt').textContent=x.a.length;scrollTo({top:0,behavior:'smooth'})};
+  box.appendChild(e)})}
+renderH();
+</script>
+</body>
+</html>
