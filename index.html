@@ -1,15 +1,18 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="de">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<!-- Sicherheit: Seite darf nur mit sich selbst reden – und mit Google NUR im bewusst eingeschalteten Online-Modus -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; connect-src https://translate.googleapis.com; base-uri 'none'; form-action 'none'">
+<meta name="referrer" content="no-referrer">
+<link rel="icon" href="data:,">
 <title>KORA · AI Translation System</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#07080A;--pt:#CFE3F2;--pt-d:rgba(207,227,242,.14)}
+:root{--bg:#07080A;--pt:#CFE3F2;--pt-d:rgba(207,227,242,.14);--warn:#f2c98f;
+ --fd:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;--fb:var(--fd)}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;background:var(--bg);color:var(--pt);font-family:'Inter',system-ui,sans-serif;min-height:100%}
+html,body{margin:0;background:var(--bg);color:var(--pt);font-family:var(--fb);min-height:100%}
 body{overflow-x:hidden}
 .grid-bg{position:fixed;inset:0;z-index:0;pointer-events:none;
  background-image:linear-gradient(rgba(207,227,242,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(207,227,242,.045) 1px,transparent 1px);
@@ -26,23 +29,33 @@ body{overflow-x:hidden}
 #hdr{position:fixed;top:0;left:0;right:0;height:100dvh;z-index:40;display:flex;flex-direction:column;align-items:center;justify-content:center;
  transition:height 1.3s cubic-bezier(.77,0,.18,1),background .8s,border-color .8s;border-bottom:1px solid transparent}
 #hdr.done{height:76px;background:rgba(7,8,10,.72);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-bottom-color:var(--pt-d)}
-#logo{font-family:'Space Grotesk',sans-serif;font-weight:300;font-size:clamp(3.4rem,15vw,9rem);letter-spacing:.55em;padding-left:.55em;line-height:1;
+#logo{font-family:var(--fd);font-weight:200;font-size:clamp(3.4rem,15vw,9rem);letter-spacing:.55em;padding-left:.55em;line-height:1;
  transition:font-size 1.3s cubic-bezier(.77,0,.18,1),letter-spacing 1.3s cubic-bezier(.77,0,.18,1);
  background:linear-gradient(100deg,#8fa5b5 10%,#fff 45%,#CFE3F2 55%,#8fa5b5 90%);background-size:220% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:blurIn 2.2s cubic-bezier(.2,.7,.2,1) both,shine 7s 2s linear infinite}
 #hdr.done #logo{font-size:1.6rem;letter-spacing:.5em;padding-left:.5em}
 @keyframes blurIn{from{opacity:0;filter:blur(26px);transform:scale(1.08)}to{opacity:1;filter:blur(0);transform:scale(1)}}
 @keyframes shine{to{background-position:-220% 0}}
-#status{display:flex;align-items:center;gap:12px;margin-top:2.2rem;font-family:'Space Grotesk';font-size:.7rem;letter-spacing:.42em;opacity:0;animation:fadeIn 1.2s 1.6s forwards;
+#status{display:flex;align-items:center;gap:12px;margin-top:2.2rem;font-family:var(--fd);font-size:.7rem;letter-spacing:.42em;opacity:0;animation:fadeIn 1.2s 1.6s forwards;
  transition:margin .8s,max-height .8s,opacity .8s;max-height:40px;overflow:hidden;text-align:center}
 #hdr.done #status{opacity:0!important;max-height:0;margin:0;animation:none}
-.dot{width:7px;height:7px;flex:none;border-radius:50%;background:var(--pt);box-shadow:0 0 0 0 rgba(207,227,242,.6);animation:pulse 2.2s infinite}
+.dot{width:7px;height:7px;flex:none;border-radius:50%;background:var(--pt);animation:pulse 2.2s infinite}
 @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(207,227,242,.55)}70%{box-shadow:0 0 0 12px rgba(207,227,242,0)}100%{box-shadow:0 0 0 0 rgba(207,227,242,0)}}
 #app{position:relative;z-index:10;max-width:1180px;margin:0 auto;padding:108px 22px 40px;opacity:0;transform:translateY(24px);transition:opacity 1.1s .5s,transform 1.1s .5s}
 #app.show{opacity:1;transform:none}
+.modebar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.badge{font-family:var(--fd);font-size:.62rem;letter-spacing:.25em;padding:8px 14px;border-radius:999px;border:1px solid rgba(159,224,196,.45);color:#c9f5e1;background:rgba(159,224,196,.06)}
+.badge.on{border-color:rgba(242,201,143,.55);color:var(--warn);background:rgba(242,201,143,.07)}
+.sw{display:inline-flex;align-items:center;gap:10px;cursor:pointer;font-family:var(--fd);font-size:.68rem;letter-spacing:.18em;text-transform:uppercase;color:rgba(207,227,242,.7);user-select:none}
+.sw input{appearance:none;-webkit-appearance:none;width:40px;height:22px;border-radius:999px;border:1px solid var(--pt-d);background:rgba(207,227,242,.05);position:relative;cursor:pointer;transition:.3s;margin:0}
+.sw input:after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:var(--pt);transition:.3s}
+.sw input:checked{background:rgba(242,201,143,.25);border-color:var(--warn)}
+.sw input:checked:after{left:20px;background:var(--warn)}
+.info{min-height:0;font-size:.82rem;line-height:1.5;color:var(--warn);margin:0 0 14px;padding:0 4px}
+.info:empty{display:none}
 .bar{display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:center;margin-bottom:22px}
 .sel{position:relative}
 .sel select{width:100%;appearance:none;-webkit-appearance:none;background:rgba(255,255,255,.025);border:1px solid var(--pt-d);color:var(--pt);
- font-family:'Space Grotesk';letter-spacing:.14em;font-size:.78rem;text-transform:uppercase;padding:15px 40px 15px 18px;border-radius:14px;outline:0;cursor:pointer;transition:.4s}
+ font-family:var(--fd);letter-spacing:.14em;font-size:.78rem;text-transform:uppercase;padding:15px 40px 15px 18px;border-radius:14px;outline:0;cursor:pointer;transition:.4s}
 .sel select:hover,.sel select:focus{border-color:rgba(207,227,242,.5);background:rgba(207,227,242,.05);box-shadow:0 0 28px rgba(207,227,242,.08)}
 .sel select option{background:#0d0f13;color:#CFE3F2}
 .sel:after{content:"";position:absolute;right:18px;top:50%;width:7px;height:7px;border-right:1px solid var(--pt);border-bottom:1px solid var(--pt);transform:translateY(-70%) rotate(45deg);pointer-events:none}
@@ -57,19 +70,20 @@ body{overflow-x:hidden}
  background:linear-gradient(100deg,transparent,rgba(255,255,255,.1),transparent);transform:skewX(-20deg);transition:left 1s ease}
 .panel:hover:before,.btn:hover:before{left:130%}
 .inner{position:relative;background:linear-gradient(160deg,rgba(14,17,22,.88),rgba(8,10,13,.92));backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-radius:21px;height:100%;display:flex;flex-direction:column;min-height:300px}
-.lab{display:flex;justify-content:space-between;align-items:center;padding:16px 20px 0;font-family:'Space Grotesk';font-size:.64rem;letter-spacing:.35em;color:rgba(207,227,242,.55)}
-textarea,#out{flex:1;width:100%;min-height:200px;background:transparent;border:0;outline:0;resize:none;color:#EAF3FA;font-size:1.18rem;line-height:1.65;font-weight:300;padding:16px 20px;font-family:'Inter'}
+.lab{display:flex;justify-content:space-between;align-items:center;padding:16px 20px 0;font-family:var(--fd);font-size:.64rem;letter-spacing:.35em;color:rgba(207,227,242,.55)}
+textarea,#out{flex:1;width:100%;min-height:200px;max-height:60vh;background:transparent;border:0;outline:0;resize:none;color:#EAF3FA;font-size:1.18rem;line-height:1.65;font-weight:300;padding:16px 20px;font-family:var(--fb)}
 textarea::placeholder{color:rgba(207,227,242,.28)}
 #out{white-space:pre-wrap;overflow:auto;transition:opacity .35s,filter .35s,transform .35s}
 #out.swap{opacity:0;filter:blur(8px);transform:translateY(6px)}
 #out .ph{color:rgba(207,227,242,.28)}
+#out .ph.err{color:var(--warn)}
 .tools{display:flex;gap:10px;align-items:center;padding:10px 16px 16px;flex-wrap:wrap}
-.ib{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--pt-d);background:rgba(207,227,242,.03);color:var(--pt);border-radius:11px;padding:9px 15px;font-family:'Space Grotesk';font-size:.7rem;letter-spacing:.2em;cursor:pointer;transition:.35s;text-transform:uppercase}
+.ib{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--pt-d);background:rgba(207,227,242,.03);color:var(--pt);border-radius:11px;padding:9px 15px;font-family:var(--fd);font-size:.7rem;letter-spacing:.2em;cursor:pointer;transition:.35s;text-transform:uppercase}
 .ib:hover{border-color:rgba(207,227,242,.55);background:rgba(207,227,242,.09);transform:translateY(-1px)}
 .ib[hidden]{display:none}
 #mic.rec{border-color:var(--pt);background:rgba(207,227,242,.14);animation:micp 1.5s infinite}
 @keyframes micp{0%{box-shadow:0 0 0 0 rgba(207,227,242,.55)}70%{box-shadow:0 0 0 14px rgba(207,227,242,0)}100%{box-shadow:0 0 0 0 rgba(207,227,242,0)}}
-.btn{position:relative;overflow:hidden;display:inline-flex;align-items:center;gap:10px;border:1px solid rgba(207,227,242,.38);background:linear-gradient(180deg,rgba(207,227,242,.12),rgba(207,227,242,.03));color:#fff;border-radius:13px;padding:13px 26px;font-family:'Space Grotesk';font-size:.78rem;letter-spacing:.22em;text-transform:uppercase;cursor:pointer;transition:.45s}
+.btn{position:relative;overflow:hidden;display:inline-flex;align-items:center;gap:10px;border:1px solid rgba(207,227,242,.38);background:linear-gradient(180deg,rgba(207,227,242,.12),rgba(207,227,242,.03));color:#fff;border-radius:13px;padding:13px 26px;font-family:var(--fd);font-size:.78rem;letter-spacing:.22em;text-transform:uppercase;cursor:pointer;transition:.45s}
 .btn:hover{border-color:var(--pt);box-shadow:0 0 34px rgba(207,227,242,.22);transform:translateY(-2px)}
 .btn:active{transform:scale(.97)}
 .btn.ok{border-color:#9fe0c4;color:#c9f5e1;box-shadow:0 0 30px rgba(159,224,196,.25)}
@@ -77,16 +91,20 @@ textarea::placeholder{color:rgba(207,227,242,.28)}
 @keyframes pulseb{50%{background:rgba(207,227,242,.22)}}
 .spin{width:14px;height:14px;border:1px solid rgba(207,227,242,.25);border-top-color:var(--pt);border-radius:50%;opacity:0;transition:opacity .3s;animation:rot .9s linear infinite}
 .spin.on{opacity:1}@keyframes rot{to{transform:rotate(360deg)}}
+.labr{display:flex;align-items:center;gap:10px}
+#prog{letter-spacing:.15em}
 #hist{margin-top:34px}
-.hh{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:10px}
-.hh h3{font-family:'Space Grotesk';font-weight:400;font-size:.64rem;letter-spacing:.38em;color:rgba(207,227,242,.5);margin:0}
+.hh{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:10px;flex-wrap:wrap}
+.hh h3{font-family:var(--fd);font-weight:400;font-size:.64rem;letter-spacing:.38em;color:rgba(207,227,242,.5);margin:0}
+.hh small{display:block;font-size:.7rem;color:rgba(207,227,242,.35);margin-top:4px;letter-spacing:.05em}
 .hh .ib{padding:6px 12px;font-size:.6rem}
 .hi{display:block;width:100%;text-align:left;cursor:pointer;border:1px solid rgba(207,227,242,.1);background:rgba(207,227,242,.02);border-radius:13px;padding:11px 16px;margin-bottom:8px;color:var(--pt);transition:.4s;animation:rise .6s both}
 .hi:hover{border-color:rgba(207,227,242,.4);background:rgba(207,227,242,.06);transform:translateX(5px)}
-.hi small{display:block;font-family:'Space Grotesk';font-size:.6rem;letter-spacing:.25em;color:rgba(207,227,242,.45);margin-bottom:3px}
+.hi small{display:block;font-family:var(--fd);font-size:.6rem;letter-spacing:.25em;color:rgba(207,227,242,.45);margin-bottom:3px}
 .hi p{margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:.88rem;font-weight:300}
 @keyframes rise{from{opacity:0;transform:translateY(10px)}}
-footer{margin-top:40px;text-align:center;font-family:'Space Grotesk';font-size:.58rem;letter-spacing:.35em;color:rgba(207,227,242,.3)}
+footer{margin-top:40px;text-align:center;font-family:var(--fd);font-size:.58rem;letter-spacing:.35em;color:rgba(207,227,242,.3)}
+footer .f2{display:block;margin-top:8px;letter-spacing:.15em}
 .ul{margin-top:16px;display:flex;justify-content:center;gap:6px}
 .ul button{background:none;border:1px solid transparent;color:rgba(207,227,242,.4);font:inherit;letter-spacing:.2em;padding:5px 10px;border-radius:8px;cursor:pointer;transition:.3s}
 .ul button:hover,.ul button.on{color:var(--pt);border-color:var(--pt-d)}
@@ -105,6 +123,12 @@ footer{margin-top:40px;text-align:center;font-family:'Space Grotesk';font-size:.
 </header>
 
 <main id="app">
+  <div class="modebar">
+    <span id="badge" class="badge"></span>
+    <label class="sw"><input type="checkbox" id="online"><span data-i18n="online">Online</span></label>
+  </div>
+  <div id="info" class="info" role="status"></div>
+
   <div class="bar">
     <div class="sel"><select id="src" aria-label="Source"></select></div>
     <button id="swap" aria-label="Swap"><span>⇄</span></button>
@@ -116,6 +140,7 @@ footer{margin-top:40px;text-align:center;font-family:'Space Grotesk';font-size:.
       <div class="lab"><span data-i18n="input">INPUT</span><span id="cnt">0</span></div>
       <textarea id="inp" data-i18n-ph="phIn" spellcheck="false" autofocus></textarea>
       <div class="tools">
+        <button class="btn" id="go"><span data-i18n="go">Translate</span></button>
         <button class="ib" id="clr">× <span data-i18n="clear">Clear</span></button>
         <button class="ib" id="pst" data-i18n="paste">Paste</button>
         <button class="ib" id="mic" hidden>
@@ -126,7 +151,7 @@ footer{margin-top:40px;text-align:center;font-family:'Space Grotesk';font-size:.
     </div></section>
 
     <section class="panel b"><div class="inner">
-      <div class="lab"><span data-i18n="output">TRANSLATION</span><span class="spin" id="spin"></span></div>
+      <div class="lab"><span data-i18n="output">TRANSLATION</span><span class="labr"><span id="prog"></span><span class="spin" id="spin"></span></span></div>
       <div id="out"></div>
       <div class="tools">
         <button class="btn" id="cpy"><span id="cpyT">Copy</span></button>
@@ -136,82 +161,173 @@ footer{margin-top:40px;text-align:center;font-family:'Space Grotesk';font-size:.
   </div>
 
   <div id="hist" hidden>
-    <div class="hh"><h3 data-i18n="hist">QUICK HISTORY</h3><button class="ib" id="hclr" data-i18n="clearHist">Clear history</button></div>
+    <div class="hh"><div><h3 data-i18n="hist">QUICK HISTORY</h3><small data-i18n="histNote"></small></div><button class="ib" id="hclr" data-i18n="clearHist">Clear history</button></div>
     <div id="hl"></div>
   </div>
   <footer><span data-i18n="footer">NATURAL · PRECISE · INSTANTLY CLEAR</span>
+    <span class="f2" data-i18n="footer2"></span>
     <div class="ul"><button data-l="de">DE</button><button data-l="tr">TR</button><button data-l="en">EN</button></div>
   </footer>
 </main>
 
 <script>
+"use strict";
 /* ---------- UI-Texte ---------- */
 const T={
-de:{status:"AI TRANSLATION SYSTEM",input:"EINGABE",output:"ÜBERSETZUNG",clear:"Löschen",paste:"Einfügen",speak:"Sprechen",listening:"Hört zu …",copy:"Kopieren",copied:"Kopiert!",read:"Vorlesen",hist:"SCHNELL-VERLAUF",clearHist:"Verlauf leeren",phIn:"Text eingeben, sprechen oder einfügen …",phOut:"Die Übersetzung erscheint hier in Echtzeit …",err:"Verbindung momentan nicht möglich – bitte gleich erneut versuchen.",auto:"Automatisch erkennen",footer:"NATÜRLICH · PRÄZISE · DIREKT VERSTÄNDLICH",autoS:"Auto"},
-tr:{status:"YAPAY ZEKÂ ÇEVİRİ SİSTEMİ",input:"GİRİŞ",output:"ÇEVİRİ",clear:"Temizle",paste:"Yapıştır",speak:"Konuş",listening:"Dinliyor …",copy:"Kopyala",copied:"Kopyalandı!",read:"Sesli oku",hist:"HIZLI GEÇMİŞ",clearHist:"Geçmişi temizle",phIn:"Metni yazın, söyleyin veya yapıştırın …",phOut:"Çeviri burada gerçek zamanlı görünür …",err:"Şu anda bağlantı kurulamıyor – lütfen birazdan tekrar deneyin.",auto:"Otomatik algıla",footer:"DOĞAL · KESİN · ANINDA ANLAŞILIR",autoS:"Oto"},
-en:{status:"AI TRANSLATION SYSTEM",input:"INPUT",output:"TRANSLATION",clear:"Clear",paste:"Paste",speak:"Speak",listening:"Listening …",copy:"Copy",copied:"Copied!",read:"Read aloud",hist:"QUICK HISTORY",clearHist:"Clear history",phIn:"Type, speak or paste text …",phOut:"Your translation appears here in real time …",err:"Connection currently unavailable – please try again in a moment.",auto:"Detect automatically",footer:"NATURAL · PRECISE · INSTANTLY CLEAR",autoS:"Auto"}};
+de:{status:"AI TRANSLATION SYSTEM",input:"EINGABE",output:"ÜBERSETZUNG",clear:"Löschen",paste:"Einfügen",speak:"Sprechen",listening:"Hört zu …",copy:"Kopieren",copied:"Kopiert!",read:"Vorlesen",hist:"SCHNELL-VERLAUF",clearHist:"Verlauf leeren",phIn:"Text eingeben oder einfügen – beliebig lang …",phOut:"Die Übersetzung erscheint hier …",err:"Verbindung momentan nicht möglich – bitte gleich erneut versuchen.",auto:"Automatisch erkennen",footer:"NATÜRLICH · PRÄZISE · DIREKT VERSTÄNDLICH",autoS:"Auto",
+ secure:"🔒 LOKAL · TEXT BLEIBT AUF DEM GERÄT",onlineBadge:"⚠ ONLINE · TEXT GEHT AN GOOGLE",online:"Online-Modus",
+ onlineWarn:"Online-Modus aktiv: Texte werden an Google gesendet. Keine vertraulichen oder personenbezogenen Daten eingeben!",
+ noLocal:"Dieser Browser unterstützt die sichere lokale Übersetzung nicht. Bitte aktuelles Google Chrome am Computer nutzen – oder bewusst den Online-Modus einschalten (nicht für vertrauliche Texte).",
+ pair:"Dieses Sprachpaar ist lokal nicht verfügbar. Andere Sprache wählen oder bewusst den Online-Modus nutzen.",
+ noDetect:"Sprache konnte nicht erkannt werden – bitte Ausgangssprache auswählen.",
+ needClick:"Beim ersten Mal wird das Sprachpaket einmalig heruntergeladen – bitte auf „Übersetzen“ klicken.",
+ loading:"Sprachpaket wird geladen …",go:"Übersetzen",noVoice:"Auf diesem Gerät gibt es keine lokale Stimme für diese Sprache.",
+ micOnline:"Spracheingabe nur im Online-Modus (Audio geht an den Browser-Anbieter).",
+ histNote:"Wird nicht gespeichert – verschwindet beim Schließen.",footer2:"Lokal-Modus: keine Daten an Dritte · nichts wird gespeichert"},
+tr:{status:"YAPAY ZEKÂ ÇEVİRİ SİSTEMİ",input:"GİRİŞ",output:"ÇEVİRİ",clear:"Temizle",paste:"Yapıştır",speak:"Konuş",listening:"Dinliyor …",copy:"Kopyala",copied:"Kopyalandı!",read:"Sesli oku",hist:"HIZLI GEÇMİŞ",clearHist:"Geçmişi temizle",phIn:"Metni yazın veya yapıştırın – istediğiniz uzunlukta …",phOut:"Çeviri burada görünür …",err:"Şu anda bağlantı kurulamıyor – lütfen birazdan tekrar deneyin.",auto:"Otomatik algıla",footer:"DOĞAL · KESİN · ANINDA ANLAŞILIR",autoS:"Oto",
+ secure:"🔒 YEREL · METİN CİHAZDA KALIR",onlineBadge:"⚠ ÇEVRİMİÇİ · METİN GOOGLE'A GİDER",online:"Çevrimiçi mod",
+ onlineWarn:"Çevrimiçi mod açık: Metinler Google'a gönderilir. Gizli veya kişisel veri girmeyin!",
+ noLocal:"Bu tarayıcı güvenli yerel çeviriyi desteklemiyor. Lütfen bilgisayarda güncel Google Chrome kullanın – veya bilinçli olarak çevrimiçi modu açın (gizli metinler için değil).",
+ pair:"Bu dil çifti yerel olarak kullanılamıyor. Başka bir dil seçin veya bilinçli olarak çevrimiçi modu kullanın.",
+ noDetect:"Dil algılanamadı – lütfen kaynak dili seçin.",
+ needClick:"İlk kullanımda dil paketi bir kez indirilir – lütfen „Çevir“e tıklayın.",
+ loading:"Dil paketi yükleniyor …",go:"Çevir",noVoice:"Bu cihazda bu dil için yerel ses yok.",
+ micOnline:"Sesli giriş yalnızca çevrimiçi modda (ses tarayıcı sağlayıcısına gider).",
+ histNote:"Kaydedilmez – kapatınca silinir.",footer2:"Yerel mod: üçüncü taraflara veri yok · hiçbir şey kaydedilmez"},
+en:{status:"AI TRANSLATION SYSTEM",input:"INPUT",output:"TRANSLATION",clear:"Clear",paste:"Paste",speak:"Speak",listening:"Listening …",copy:"Copy",copied:"Copied!",read:"Read aloud",hist:"QUICK HISTORY",clearHist:"Clear history",phIn:"Type or paste text – any length …",phOut:"Your translation appears here …",err:"Connection currently unavailable – please try again in a moment.",auto:"Detect automatically",footer:"NATURAL · PRECISE · INSTANTLY CLEAR",autoS:"Auto",
+ secure:"🔒 LOCAL · TEXT STAYS ON THIS DEVICE",onlineBadge:"⚠ ONLINE · TEXT IS SENT TO GOOGLE",online:"Online mode",
+ onlineWarn:"Online mode on: text is sent to Google. Do not enter confidential or personal data!",
+ noLocal:"This browser does not support secure local translation. Please use an up-to-date Google Chrome on a computer – or deliberately switch on online mode (not for confidential text).",
+ pair:"This language pair is not available locally. Pick another language or deliberately use online mode.",
+ noDetect:"Language could not be detected – please choose the source language.",
+ needClick:"The first time, the language pack is downloaded once – please click “Translate”.",
+ loading:"Loading language pack …",go:"Translate",noVoice:"No local voice for this language on this device.",
+ micOnline:"Voice input only in online mode (audio goes to the browser vendor).",
+ histNote:"Not saved – disappears when you close the page.",footer2:"Local mode: no data to third parties · nothing is saved"}};
+
 const sysLang=((navigator.languages&&navigator.languages[0])||navigator.language||'en').slice(0,2).toLowerCase();
 let ui=T[sysLang]?sysLang:'en';
 try{const s=localStorage.getItem('kora_ui');if(T[s])ui=s}catch(e){}
+/* alten Verlauf aus früherer Version entfernen */
+try{localStorage.removeItem('kora_hist')}catch(e){}
 
 const L=["de","en","tr","ar","fr","es","it","pt","ru","uk","pl","nl","ro","bg","el","sr","hr","bs","sq","cs","sk","hu","sv","da","no","fi","he","fa","ku","hi","ur","bn","zh-CN","ja","ko","th","vi","id","ms","sw","af","lt","lv","et","is","ka","hy","az","kk","la"];
 const $=id=>document.getElementById(id);
-const src=$('src'),tgt=$('tgt'),inp=$('inp'),out=$('out'),spin=$('spin');
-let result='',tok=0,timer,histTimer,rot=0,failed=false;
+const src=$('src'),tgt=$('tgt'),inp=$('inp'),out=$('out'),spin=$('spin'),prog=$('prog'),onl=$('online');
+let result='',tok=0,timer,histTimer,rot=0,errKey='';
+const hasLocal=('Translator' in self);
+const hasDetect=('LanguageDetector' in self);
+const isOnline=()=>onl.checked;
 
 function langName(c){try{return new Intl.DisplayNames([ui],{type:'language'}).of(c==='zh-CN'?'zh':c)||c}catch(e){return c}}
 function buildSelects(){
- const sv=src.value||'auto',tv=tgt.value||(ui==='de'?'en':ui==='tr'?'de':'de');
+ const sv=src.value||'auto',tv=tgt.value||(ui==='de'?'en':'de');
  src.innerHTML=`<option value="auto">${T[ui].auto}</option>`+L.map(c=>`<option value="${c}">${langName(c)}</option>`).join('');
  tgt.innerHTML=L.map(c=>`<option value="${c}">${langName(c)}</option>`).join('');
  src.value=sv;tgt.value=tv}
-function showPh(){out.innerHTML='';const s=document.createElement('span');s.className='ph';s.textContent=failed?T[ui].err:T[ui].phOut;out.appendChild(s)}
+function showPh(){out.innerHTML='';const s=document.createElement('span');s.className='ph'+(errKey?' err':'');s.textContent=errKey?T[ui][errKey]:T[ui].phOut;out.appendChild(s)}
+function setInfo(k){$('info').textContent=k?T[ui][k]:''}
+function modeUI(){
+ const on=isOnline(),b=$('badge');
+ b.textContent=on?T[ui].onlineBadge:T[ui].secure;b.classList.toggle('on',on);
+ setInfo(on?'onlineWarn':(!hasLocal?'noLocal':''));
+ $('mic').hidden=!(SR&&on);if(!on)stopMic()}
 function apply(){
  document.documentElement.lang=ui;const t=T[ui];
  document.querySelectorAll('[data-i18n]').forEach(e=>e.textContent=t[e.dataset.i18n]);
  document.querySelectorAll('[data-i18n-ph]').forEach(e=>e.placeholder=t[e.dataset.i18nPh]);
  $('micT').textContent=recOn?t.listening:t.speak;$('cpyT').textContent=t.copy;
  document.querySelectorAll('.ul button').forEach(b=>b.classList.toggle('on',b.dataset.l===ui));
- buildSelects();if(!result)showPh();renderH()}
+ buildSelects();modeUI();if(!result)showPh();renderH()}
 document.querySelectorAll('.ul button').forEach(b=>b.onclick=()=>{ui=b.dataset.l;try{localStorage.setItem('kora_ui',ui)}catch(e){}apply()});
+/* Online-Modus ist bei jedem Laden AUS – muss bewusst eingeschaltet werden */
+onl.checked=false;
+onl.addEventListener('change',()=>{modeUI();translate()});
 
 setTimeout(()=>{$('hdr').classList.add('done');$('app').classList.add('show')},3300);
 
-/* ---------- Übersetzungs-Kaskade: Google GTX -> MyMemory ---------- */
+/* ---------- Text in Abschnitte teilen (für beliebig lange Texte) ---------- */
 function chunks(t,max){const parts=t.match(/[^.!?\n]+[.!?]*\s*|\n/g)||[t],res=[];let c='';
  for(const p of parts){if((c+p).length>max&&c){res.push(c);c=''}
   if(p.length>max){for(let i=0;i<p.length;i+=max)res.push(p.slice(i,i+max))}else c+=p}
  if(c)res.push(c);return res}
+const norm=c=>c==='zh-CN'?'zh':c;
+function showProgress(i,n){prog.textContent=n>1?`${i}/${n}`:''}
+
+/* ---------- 1) LOKAL: Chrome-eigene Übersetzung auf dem Gerät ---------- */
+const trCache=new Map();let detector=null;
+function err(code){const e=new Error(code);e.code=code;return e}
+async function detect(text){
+ if(!hasDetect)throw err('noDetect');
+ if(!detector)detector=await LanguageDetector.create();
+ const r=await detector.detect(text.slice(0,3000));const top=r&&r[0];
+ if(!top||!top.detectedLanguage||top.detectedLanguage==='und'||top.confidence<0.4)throw err('noDetect');
+ return top.detectedLanguage}
+async function getTranslator(s,t){
+ const k=s+'>'+t;if(trCache.has(k))return trCache.get(k);
+ const av=await Translator.availability({sourceLanguage:s,targetLanguage:t});
+ if(av==='unavailable')throw err('pair');
+ if(av!=='available')setInfo('loading');
+ const p=Translator.create({sourceLanguage:s,targetLanguage:t});
+ trCache.set(k,p);
+ try{const tr=await p;if(!isOnline())setInfo(hasLocal?'':'noLocal');return tr}
+ catch(e){trCache.delete(k);if(e&&e.name==='NotAllowedError')throw err('needClick');throw e}}
+async function localTranslate(text,s,t,my){
+ if(!hasLocal)throw err('noLocal');
+ if(s==='auto')s=await detect(text);
+ s=norm(s);const tt=norm(t);
+ if(s===tt||s.split('-')[0]===tt.split('-')[0])return text;
+ const tr=await getTranslator(s,tt);
+ const parts=chunks(text,1000);let acc='';
+ for(let i=0;i<parts.length;i++){
+  if(my!==tok)return null;
+  const m=parts[i].match(/^(\s*)([\s\S]*?)(\s*)$/);
+  acc+=m[1]+(m[2]?await tr.translate(m[2]):'')+m[3];
+  if(my!==tok)return null;
+  showProgress(i+1,parts.length);
+  if(parts.length>1)out.textContent=acc}
+ return acc}
+
+/* ---------- 2) ONLINE (nur bewusst eingeschaltet): Google ---------- */
 const timeout=ms=>{const c=new AbortController();setTimeout(()=>c.abort(),ms);return c.signal};
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
 async function gtx(q,s,t){
  if(!q.trim())return q;
- const r=await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=${s}&tl=${t}&dt=t&q=${encodeURIComponent(q)}`,{signal:timeout(8000)});
- if(!r.ok)throw new Error('gtx '+r.status);
- const d=await r.json();
- if(!Array.isArray(d)||!Array.isArray(d[0]))throw new Error('gtx format');
- return d[0].map(x=>x&&x[0]||'').join('')}
-async function mymemory(q,s,t){
- if(!q.trim())return q;
- const r=await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(q)}&langpair=${s==='auto'?'Autodetect':s}|${t}&de=kora-app@example.com`,{signal:timeout(10000)});
- const d=await r.json(),x=d&&d.responseData&&d.responseData.translatedText;
- if(!x||d.responseStatus!=200)throw new Error('mm');
- const ta=document.createElement('textarea');ta.innerHTML=x;return ta.value}
-async function engine(text,s,t){
- try{return(await Promise.all(chunks(text,1500).map(c=>gtx(c,s,t)))).join('')}
- catch(e){return(await Promise.all(chunks(text,450).map(c=>mymemory(c,s,t)))).join('')}}
+ let lastErr;
+ for(let a=0;a<3;a++){
+  try{
+   const r=await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=${encodeURIComponent(s)}&tl=${encodeURIComponent(t)}&dt=t&q=${encodeURIComponent(q)}`,{signal:timeout(10000),credentials:'omit',referrerPolicy:'no-referrer'});
+   if(!r.ok)throw new Error('gtx '+r.status);
+   const d=await r.json();
+   if(!Array.isArray(d)||!Array.isArray(d[0]))throw new Error('gtx format');
+   return d[0].map(x=>x&&x[0]||'').join('')
+  }catch(e){lastErr=e;await wait(800*(a+1))}}
+ throw lastErr}
+async function onlineTranslate(text,s,t,my){
+ const parts=chunks(text,1500),res=new Array(parts.length);let next=0,done=0;
+ async function worker(){
+  while(next<parts.length){
+   const i=next++;if(my!==tok)return;
+   res[i]=await gtx(parts[i],s,t);done++;
+   if(my===tok)showProgress(done,parts.length)}}
+ await Promise.all([worker(),worker(),worker()]); /* max. 3 gleichzeitig -> keine Sperre bei langen Texten */
+ return my===tok?res.join(''):null}
 
+/* ---------- Steuerung ---------- */
 async function translate(){
- const text=inp.value.trim(),my=++tok;failed=false;
+ const text=inp.value.trim(),my=++tok;errKey='';showProgress(0,0);
  if(!text){result='';showPh();spin.classList.remove('on');return}
  spin.classList.add('on');
  try{const s=src.value,t=tgt.value;
-  const r=(s===t)?text:await engine(text,s,t);
-  if(my!==tok)return;
-  result=r;out.textContent=r;spin.classList.remove('on');
+  const r=(s===t)?text:(isOnline()?await onlineTranslate(text,s,t,my):await localTranslate(text,s,t,my));
+  if(my!==tok||r===null)return;
+  result=r;out.textContent=r;spin.classList.remove('on');showProgress(0,0);
   clearTimeout(histTimer);histTimer=setTimeout(()=>saveHist(text,r),1800);
- }catch(e){if(my!==tok)return;spin.classList.remove('on');result='';failed=true;showPh()}}
-const deb=()=>{clearTimeout(timer);$('cnt').textContent=inp.value.length;timer=setTimeout(translate,450)};
+ }catch(e){if(my!==tok)return;spin.classList.remove('on');showProgress(0,0);result='';
+  errKey=(e&&e.code&&T[ui][e.code])?e.code:'err';showPh()}}
+const deb=()=>{clearTimeout(timer);$('cnt').textContent=inp.value.length;timer=setTimeout(translate,isOnline()?700:450)};
 inp.addEventListener('input',deb);
+$('go').onclick=()=>{clearTimeout(timer);translate()};
 
 [src,tgt].forEach(s=>s.addEventListener('change',()=>{out.classList.add('swap');setTimeout(()=>out.classList.remove('swap'),350);translate()}));
 $('swap').onclick=()=>{
@@ -224,14 +340,14 @@ $('swap').onclick=()=>{
 $('clr').onclick=()=>{stopMic();inp.value='';$('cnt').textContent=0;translate();inp.focus()};
 $('pst').onclick=async()=>{try{inp.value=await navigator.clipboard.readText();$('cnt').textContent=inp.value.length;translate()}catch(e){inp.focus()}};
 
-/* ---------- Mikrofon ---------- */
+/* ---------- Mikrofon (nur Online-Modus, da Audio an den Browser-Anbieter geht) ---------- */
 const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
 let rec=null,recOn=false,baseTxt='';
 function stopMic(){if(rec&&recOn){try{rec.stop()}catch(e){}}}
 function micUI(on){recOn=on;$('mic').classList.toggle('rec',on);$('micT').textContent=on?T[ui].listening:T[ui].speak}
 if(SR){
- $('mic').hidden=false;
  $('mic').onclick=()=>{
+  if(!isOnline()){setInfo('micOnline');return}
   if(recOn){stopMic();return}
   rec=new SR();
   rec.lang=src.value==='auto'?(navigator.language||'en-US'):src.value;
@@ -251,19 +367,23 @@ $('cpy').onclick=async()=>{if(!result)return;
 $('spk').onclick=()=>{if(!result||!('speechSynthesis' in window))return;
  const sy=speechSynthesis,b=$('spk');
  if(sy.speaking){sy.cancel();b.classList.remove('speaking');return}
- const u=new SpeechSynthesisUtterance(result);u.lang=tgt.value;u.rate=.95;
+ const lang=norm(tgt.value).split('-')[0];
+ const voices=sy.getVoices().filter(v=>v.lang&&v.lang.toLowerCase().startsWith(lang));
+ /* im Lokal-Modus nur Stimmen, die auf dem Gerät laufen */
+ const pick=voices.find(v=>v.localService)||(isOnline()?voices[0]:null);
+ if(!pick&&!isOnline()){setInfo('noVoice');return}
+ const u=new SpeechSynthesisUtterance(result);u.lang=tgt.value;u.rate=.95;if(pick)u.voice=pick;
  u.onend=u.onerror=()=>b.classList.remove('speaking');
  b.classList.add('speaking');sy.speak(u)};
+if('speechSynthesis' in window)speechSynthesis.getVoices();
 
-/* ---------- Verlauf (letzte 3, lokal) ---------- */
-const KEY='kora_hist';
-const getH=()=>{try{return JSON.parse(localStorage.getItem(KEY))||[]}catch(e){return[]}};
+/* ---------- Verlauf: nur im Arbeitsspeicher, wird NICHT gespeichert ---------- */
+let H=[];
 function saveHist(a,b){if(a.length<2||!b)return;
- let h=getH().filter(x=>x.a!==a);h.unshift({a,b,s:src.value,t:tgt.value});h=h.slice(0,3);
- try{localStorage.setItem(KEY,JSON.stringify(h))}catch(e){}renderH()}
-$('hclr').onclick=()=>{try{localStorage.removeItem(KEY)}catch(e){}renderH()};
-function renderH(){const h=getH(),box=$('hl');$('hist').hidden=!h.length;box.innerHTML='';
- h.forEach((x,i)=>{const e=document.createElement('button');e.className='hi';e.style.animationDelay=i*.08+'s';
+ H=H.filter(x=>x.a!==a);H.unshift({a,b,s:src.value,t:tgt.value});H=H.slice(0,3);renderH()}
+$('hclr').onclick=()=>{H=[];renderH()};
+function renderH(){const box=$('hl');$('hist').hidden=!H.length;box.innerHTML='';
+ H.forEach((x,i)=>{const e=document.createElement('button');e.className='hi';e.style.animationDelay=i*.08+'s';
   const sm=document.createElement('small'),p1=document.createElement('p'),p2=document.createElement('p');
   const nm=c=>c==='auto'?T[ui].autoS:langName(c);
   sm.textContent=(nm(x.s)+' → '+nm(x.t)).toUpperCase();p1.textContent=x.a;p2.textContent=x.b;p2.style.opacity='.6';
